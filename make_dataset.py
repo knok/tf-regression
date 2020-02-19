@@ -7,6 +7,7 @@ import tarfile
 import csv
 import re
 import requests
+import random
 
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from sudachipy import tokenizer
@@ -99,3 +100,26 @@ with tarfile.open(tgz_fname) as tf:
             score = calc_sent_score(title)
             row = [target_genre[1], 1, '', score, title]
             writer.writerow(row)
+
+random.seed(100)
+with open("all.tsv", 'r') as f, open("rand-all.tsv", "w") as wf:
+    lines = f.readlines()
+    random.shuffle(lines)
+    for line in lines:
+        wf.write(line)
+
+random.seed(101)
+
+train_fname, dev_fname, test_fname = ["train.tsv", "dev.tsv", "test.tsv"]
+
+with open("rand-all.tsv") as f, open(train_fname, "w") as tf, open(dev_fname, "w") as df, open(test_fname, "w") as ef:
+    ef.write("class\tsentence\n")
+    for line in f:
+        v = random.randint(0, 9)
+        if v == 8:
+            df.write(line)
+        elif v == 9:
+            row = line.split('\t')
+            ef.write("\t".join([row[1], row[3]]))
+        else:
+            tf.write(line)
