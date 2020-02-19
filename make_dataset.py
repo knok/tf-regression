@@ -38,6 +38,18 @@ with open(pn_fname) as f:
         row = line.strip().split(':')
         pn_words[row[0]] = float(row[-1])
 
+def calc_sent_score(text):
+    score = 0.0
+    words = 0
+    for word in sdt.tokenize(text):
+        surface = word.surface()
+        if surface in pn_words.keys():
+            score += pn_words[surface]
+            words += 1
+    if words > 0:
+        score /= words
+    return score
+
 target_genre = ["it-life-hack", "kaden-channel"]
 
 zero_fnames = []
@@ -77,11 +89,13 @@ with tarfile.open(tgz_fname) as tf:
         for name in zero_fnames:
             f = tf.extractfile(name)
             title = read_title(f)
-            row = [target_genre[0], 0, '', title]
+            score = calc_sent_score(title)
+            row = [target_genre[0], 0, '', score, title]
             writer.writerow(row)
         # ラベル 1
         for name in one_fnames:
             f = tf.extractfile(name)
             title = read_title(f)
-            row = [target_genre[1], 1, '', title]
+            score = calc_sent_score(title)
+            row = [target_genre[1], 1, '', score, title]
             writer.writerow(row)
