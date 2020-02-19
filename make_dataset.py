@@ -9,15 +9,20 @@ import re
 import requests
 
 from google_drive_downloader import GoogleDriveDownloader as gdd
+from sudachipy import tokenizer
+from sudachipy import dictionary
+
+sdt = dictionary.Dictionary().create()
 
 # ライブドアニュースコーパス
 # https://www.rondhuit.com/download.html
 # ライセンス: CC-BY-ND 2.1 https://creativecommons.org/licenses/by-nd/2.1/jp/
 tgz_fname = "./ldcc-20140209.tar.gz"
-# http://www.cl.ecei.tohoku.ac.jp/index.php?Open%20Resources/Japanese%20Sentiment%20Polarity%20Dictionary
-# 日本語評価極性辞書（用言編）ver.1.0（2008年12月版）
-# 著作者: 東北大学 乾・岡崎研究室 / Author(s): Inui-Okazaki Laboratory, Tohoku University
-pn_url = "http://www.cl.ecei.tohoku.ac.jp/resources/sent_lex/wago.121808.pn"
+# http://www.lr.pi.titech.ac.jp/~takamura/pndic_ja.html
+# 単語感情極性対応表
+# 高村大也, 乾孝司, 奥村学
+# "スピンモデルによる単語の感情極性抽出", 情報処理学会論文誌ジャーナル, Vol.47 No.02 pp. 627--637, 2006.
+pn_url = "http://www.lr.pi.titech.ac.jp/~takamura/pubs/pn_ja.dic"
 pn_fname = os.path.basename(pn_url)
 
 if not os.path.exists(tgz_fname):
@@ -26,7 +31,12 @@ if not os.path.exists(tgz_fname):
 if not os.path.exists(pn_fname):
     resp = requests.get(pn_url)
     with open(pn_fname, "w") as f:
-        f.write(resp.content)
+        f.write(resp.content.decode('cp932'))
+pn_words = {}
+with open(pn_fname) as f:
+    for line in f:
+        row = line.strip().split(':')
+        pn_words[row[0]] = float(row[-1])
 
 target_genre = ["it-life-hack", "kaden-channel"]
 
