@@ -23,12 +23,6 @@ CONFIG_FILE = "./albert/config.json"
 MODEL_DIR= "./albert"
 TRAIN_FILE = "./train.tsv"
 
-# flow:
-# download model
-# define network
-# load data
-# train
-
 config = transformers.AlbertConfig.from_json_file(CONFIG_FILE)
 config.num_labels = 1 # for regression
 tokenizer = transformers.AlbertTokenizer.from_pretrained(MODEL_DIR, keep_accents=True)
@@ -65,16 +59,29 @@ for ex_index, example in enumerate(examples):
         input_ids=input_ids, attention_mask=attention_mask, 
         token_type_ids=token_type_ids, label=label))
 
+# create dataset
+all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
+all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
+all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
+all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
+dataset = torch.utils.data.TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
+
 device = "cpu"
 if torch.cuda.is_available():
     device = "gpu"
 model.to(device)
 # train
-sampler = torch.utils.data.RandomSampler(features)
-dataloader = torch.utils.data.DataLoader(features, sampler=sampler, batch_size=8)
+sampler = torch.utils.data.RandomSampler(dataset)
+dataloader = torch.utils.data.DataLoader(dataset, sampler=sampler, batch_size=8)
 max_epoch = 50
 
-optimizer = transformers.AdamW({}, lr=5e-5)
+no_decay = ['bias', 'LayerNorm.weight']
+optimizer_grouped_parameters = [
+    {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.0},
+    {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
+
+optimizer = transformers.AdamW(optimizer_grouped_parameters, lr=5e-5)
 global_step = 0
 tr_loss = 0.0
 model.zero_grad()
@@ -91,7 +98,7 @@ for _ in train_iter:
         loss.backward()
 
         tr_loss += loss.item()
-        optimizer.setp()
+        optimizer.step()
         model.zero_grad()
         global_step += 1
 
