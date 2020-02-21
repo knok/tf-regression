@@ -29,6 +29,18 @@ config.num_labels = 1 # for regression
 tokenizer = transformers.AlbertTokenizer.from_pretrained(MODEL_DIR, keep_accents=True)
 model = transformers.AlbertForSequenceClassification.from_pretrained(MODEL_DIR, config=config)
 
+# freeze lower layers
+# ref: https://github.com/nekoumei/DocumentClassificationUsingBERT-Japanese
+# 1. まず全部を、勾配計算Falseにしてしまう
+for name, param in model.named_parameters():
+    param.requires_grad = False
+# 2. 最後のBertLayerモジュールを勾配計算ありに変更
+for name, param in model.albert.encoder.albert_layer_groups[-1].named_parameters():
+    param.requires_grad = True
+# 3. 識別器を勾配計算ありに変更
+for name, param in model.classifier.named_parameters():
+    param.requires_grad = True
+
 # create examples
 examples = []
 with open(TRAIN_FILE) as f:
