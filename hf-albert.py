@@ -69,7 +69,7 @@ dataset = torch.utils.data.TensorDataset(all_input_ids, all_attention_mask, all_
 
 device = "cpu"
 if torch.cuda.is_available():
-    device = "gpu"
+    device = "cuda"
 model.to(device)
 # train
 sampler = torch.utils.data.RandomSampler(dataset)
