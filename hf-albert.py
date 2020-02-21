@@ -86,7 +86,7 @@ model.to(device)
 # train
 sampler = torch.utils.data.RandomSampler(dataset)
 dataloader = torch.utils.data.DataLoader(dataset, sampler=sampler, batch_size=8)
-max_epoch = 50
+max_epoch = 100
 
 no_decay = ['bias', 'LayerNorm.weight']
 optimizer_grouped_parameters = [
