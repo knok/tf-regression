@@ -22,6 +22,7 @@ for fname, fid in ALBERT_FILES.items():
 CONFIG_FILE = "./albert/config.json"
 MODEL_DIR= "./albert"
 TRAIN_FILE = "./train.tsv"
+OUTPUT_DIR = "output"
 
 config = transformers.AlbertConfig.from_json_file(CONFIG_FILE)
 config.num_labels = 1 # for regression
@@ -102,3 +103,6 @@ for _ in train_iter:
         model.zero_grad()
         global_step += 1
 
+# save result
+model.save_pretrained(OUTPUT_DIR)
+tokenizer.save_pretrained(OUTPUT_DIR)
