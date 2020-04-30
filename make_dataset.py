@@ -12,6 +12,7 @@ import random
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from sudachipy import tokenizer
 from sudachipy import dictionary
+import neologdn
 
 sdt = dictionary.Dictionary().create()
 
@@ -42,7 +43,7 @@ with open(pn_fname) as f:
 def calc_sent_score(text):
     score = 0.0
     words = 0
-    for word in sdt.tokenize(text):
+    for word in sdt.tokenize(neologdn.normalize(text)):
         surface = word.surface()
         if surface in pn_words.keys():
             score += pn_words[surface]
