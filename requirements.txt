@@ -1,3 +1,4 @@
 GoogleDriveDownloader
 requests
 transformers
+neologdn
